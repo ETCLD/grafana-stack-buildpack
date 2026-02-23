@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+set -e
+
+echo "-----> Installing Grafana, Loki and Alloy ${ALLOY_VERSION}"
+
+BUILD_DIR=${1:-}  # The location of the future app
+CACHE_DIR=${2:-}  # The contents of CACHE_DIR will be persisted between builds.
+
+mkdir -p $BUILD_DIR/bin
+
+if [ -z "$ALLOY_VERSION" ]; then
+    echo " !     ALLOY_VERSION is not defined." >&2
+    exit 1
+fi
+
+
+if [ -d "$CACHE_DIR/alloy-${ALLOY_VERSION}-linux-amd64" ]; then
+    echo "       Using Alloy ${ALLOY_VERSION} from cache"
+else
+    echo "       Downloading Alloy ${ALLOY_VERSION}"
+    curl -s -L https://github.com/grafana/alloy/releases/download/${ALLOY_VERSION}/alloy-linux-amd64.zip --output /tmp/alloy-${ALLOY_VERSION}-linux-amd64.zip
+    unzip /tmp/alloy-${ALLOY_VERSION}-linux-amd64.zip -d $CACHE_DIR/alloy-${ALLOY_VERSION}-linux-amd64
+fi
+
+echo "       Installing Alloy ${ALLOY_VERSION}"
+cp "$CACHE_DIR/alloy-${ALLOY_VERSION}-linux-amd64/alloy-linux-amd64" "$BUILD_DIR/bin"
+chmod +x "$BUILD_DIR/bin/alloy-linux-amd64"
+
+echo "       Done"
+exit 0

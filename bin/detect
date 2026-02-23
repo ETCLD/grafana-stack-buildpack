@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+echo "Grafana, Loki and Alloy"
+exit 0
