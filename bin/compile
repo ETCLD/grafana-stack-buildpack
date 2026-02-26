@@ -2,7 +2,7 @@
 
 set -e
 
-echo "-----> Installing Grafana, Loki and Alloy ${ALLOY_VERSION}"
+echo "-----> Installing Grafana, Loki ${LOKI_VERSION} and Alloy ${ALLOY_VERSION}"
 
 BUILD_DIR=${1:-}  # The location of the future app
 CACHE_DIR=${2:-}  # The contents of CACHE_DIR will be persisted between builds.
@@ -11,6 +11,11 @@ mkdir -p $BUILD_DIR/bin
 
 if [ -z "$ALLOY_VERSION" ]; then
     echo " !     ALLOY_VERSION is not defined." >&2
+    exit 1
+fi
+
+if [ -z "$LOKI_VERSION" ]; then
+    echo " !     LOKI_VERSION is not defined." >&2
     exit 1
 fi
 
@@ -23,9 +28,22 @@ else
     unzip /tmp/alloy-${ALLOY_VERSION}-linux-amd64.zip -d $CACHE_DIR/alloy-${ALLOY_VERSION}-linux-amd64
 fi
 
+if [ -d "$CACHE_DIR/loki-${LOKI_VERSION}-linux-amd64" ]; then
+    echo "       Using Loki ${LOKI_VERSION} from cache"
+else
+    echo "       Downloading Loki ${LOKI_VERSION}"
+    curl -s -L https://github.com/grafana/loki/releases/download/${LOKI_VERSION}/loki-linux-amd64.zip --output /tmp/loki-${LOKI_VERSION}-linux-amd64.zip
+    unzip /tmp/loki-${LOKI_VERSION}-linux-amd64.zip -d $CACHE_DIR/loki-${LOKI_VERSION}-linux-amd64
+fi
+
 echo "       Installing Alloy ${ALLOY_VERSION}"
 cp "$CACHE_DIR/alloy-${ALLOY_VERSION}-linux-amd64/alloy-linux-amd64" "$BUILD_DIR/bin"
 chmod +x "$BUILD_DIR/bin/alloy-linux-amd64"
+
+
+echo "       Installing Loki ${LOKI_VERSION}"
+cp "$CACHE_DIR/loki-${LOKI_VERSION}-linux-amd64/loki-linux-amd64" "$BUILD_DIR/bin"
+chmod +x "$BUILD_DIR/bin/loki-linux-amd64"
 
 echo "       Done"
 exit 0
